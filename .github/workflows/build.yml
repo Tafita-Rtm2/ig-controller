@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
 
@@ -16,21 +19,29 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - uses: android-actions/setup-android@v2
-
       - uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.7'
 
+      - name: Ensure Android SDK packages are available
+        run: |
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH"
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
       - run: chmod +x gradlew
 
-      - name: Build release APK
-        run: |
-          set -o pipefail
-          ./gradlew assembleRelease --stacktrace 2>&1 | tail -80
+      - name: Build debug APK
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      - name: Verify generated APK
+        run: find app/build/outputs/apk -name "*.apk" -print
 
       - uses: actions/upload-artifact@v4
         with:
           name: IGController
-          path: app/build/outputs/apk/**/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
