@@ -16,21 +16,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - uses: android-actions/setup-android@v2
-
       - uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.7'
 
       - run: chmod +x gradlew
 
-      - name: Build release APK
-        run: |
-          set -o pipefail
-          ./gradlew assembleRelease --stacktrace 2>&1 | tail -80
+      - name: Build debug APK
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      - name: Verify generated APK
+        run: find app/build/outputs/apk -name "*.apk" -print
 
       - uses: actions/upload-artifact@v4
         with:
           name: IGController
-          path: app/build/outputs/apk/**/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
