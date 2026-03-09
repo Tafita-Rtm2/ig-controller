@@ -24,7 +24,7 @@ public class IGControllerService extends AccessibilityService {
 
     @Override
     public void onServiceConnected() {
-        Log.d(TAG, "Service connecte !");
+        Log.d(TAG, "Service connecte!");
         writeResult("ready", "Service IGController actif");
         startWatching();
     }
@@ -66,10 +66,6 @@ public class IGControllerService extends AccessibilityService {
             case "tap":
                 tap(cmd.getInt("x"), cmd.getInt("y"));
                 writeResult("ok", "tap");
-                break;
-            case "type":
-                typeText(cmd.getString("text"));
-                writeResult("ok", "typed");
                 break;
             case "find_and_tap":
                 boolean found = findAndTap(cmd.getString("text"));
@@ -125,15 +121,6 @@ public class IGControllerService extends AccessibilityService {
         }
     }
 
-    private void typeText(String text) {
-        AccessibilityNodeInfo focus = findFocused();
-        if (focus != null) {
-            android.os.Bundle args = new android.os.Bundle();
-            args.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
-            focus.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args);
-        }
-    }
-
     private boolean findAndTap(String text) {
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root == null) return false;
@@ -180,7 +167,10 @@ public class IGControllerService extends AccessibilityService {
 
     private void launchApp(String pkg) {
         android.content.Intent i = getPackageManager().getLaunchIntentForPackage(pkg);
-        if (i != null) { i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK); getApplicationContext().startActivity(i); }
+        if (i != null) {
+            i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            getApplicationContext().startActivity(i);
+        }
     }
 
     private AccessibilityNodeInfo findNodeByText(AccessibilityNodeInfo node, String text) {
@@ -204,12 +194,6 @@ public class IGControllerService extends AccessibilityService {
         return null;
     }
 
-    private AccessibilityNodeInfo findFocused() {
-        AccessibilityNodeInfo root = getRootInActiveWindow();
-        if (root == null) return null;
-        return root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
-    }
-
     private String dumpNodes() {
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root == null) return "[]";
@@ -226,13 +210,13 @@ public class IGControllerService extends AccessibilityService {
         String hint = node.getHintText() != null ? node.getHintText().toString() : "";
         String desc = node.getContentDescription() != null ? node.getContentDescription().toString() : "";
         if (!text.isEmpty() || !hint.isEmpty() || !desc.isEmpty()) {
-            sb.append("{\"text\":\"").append(text.replace("\"",""))
-              .append("\",\"hint\":\"").append(hint.replace("\"",""))
-              .append("\",\"desc\":\"").append(desc.replace("\"",""))
+            sb.append("{\"text\":\"").append(text.replace("\"", ""))
+              .append("\",\"hint\":\"").append(hint.replace("\"", ""))
+              .append("\",\"desc\":\"").append(desc.replace("\"", ""))
               .append("\",\"x\":").append(r.centerX())
               .append(",\"y\":").append(r.centerY()).append("},");
         }
-        for (int i = 0; i < node.getChildCount(); i++) dumpNode(node.getChild(i), sb, depth+1);
+        for (int i = 0; i < node.getChildCount(); i++) dumpNode(node.getChild(i), sb, depth + 1);
     }
 
     private void writeResult(String status, String message) {
@@ -242,11 +226,17 @@ public class IGControllerService extends AccessibilityService {
             result.put("message", message != null ? message.substring(0, Math.min(message.length(), 500)) : "");
             result.put("ts", System.currentTimeMillis());
             FileWriter fw = new FileWriter(RESULT_FILE);
-            fw.write(result.toString()); fw.close();
-        } catch (Exception e) { Log.e(TAG, "writeResult: " + e.getMessage()); }
+            fw.write(result.toString());
+            fw.close();
+        } catch (Exception e) {
+            Log.e(TAG, "writeResult: " + e.getMessage());
+        }
     }
 
     @Override public void onAccessibilityEvent(AccessibilityEvent event) {}
     @Override public void onInterrupt() {}
-    @Override public void onDestroy() { if (timer != null) timer.cancel(); super.onDestroy(); }
+    @Override public void onDestroy() {
+        if (timer != null) timer.cancel();
+        super.onDestroy();
+    }
 }
