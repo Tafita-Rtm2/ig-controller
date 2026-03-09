@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">IGController</string>
-    <string name="accessibility_description">Pilote Instagram Lite</string>
+    <string name="accessibility_description">IGController accessibility service</string>
 </resources>
