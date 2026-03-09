@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
 
@@ -19,29 +16,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.7'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Ensure Android SDK packages are available
-        run: |
-          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH"
-          yes | sdkmanager --licenses >/dev/null
-          sdkmanager --install \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
-      - run: chmod +x gradlew
+      - name: Build APK
+        run: ./gradlew assembleRelease
 
-      - name: Build debug APK
-        run: ./gradlew --no-daemon --stacktrace assembleDebug
-
-      - name: Verify generated APK
-        run: find app/build/outputs/apk -name "*.apk" -print
+      - name: Find APK
+        run: find . -name "*.apk" -type f
 
       - uses: actions/upload-artifact@v4
         with:
-          name: IGController
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          name: IGController-APK
+          path: "**/*.apk"
