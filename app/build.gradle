@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
 }
 android {
+    namespace 'com.igcontroller'
     compileSdk 34
     defaultConfig {
         applicationId "com.igcontroller"
