@@ -17,14 +17,16 @@ import java.util.TimerTask;
 
 public class IGControllerService extends AccessibilityService {
     private static final String TAG = "IGController";
-    private static final String CMD_FILE = "/sdcard/cmd.json";
-    private static final String RESULT_FILE = "/sdcard/cmd_result.json";
+    private static final String CMD_FILE = "/sdcard/Android/data/com.igcontroller/cmd.json";
+    private static final String RESULT_FILE = "/sdcard/Android/data/com.igcontroller/cmd_result.json";
     private Timer timer;
     private long lastModified = 0;
 
     @Override
     public void onServiceConnected() {
         Log.d(TAG, "Service connecte!");
+        // Creer le dossier si necessaire
+        new File("/sdcard/Android/data/com.igcontroller/").mkdirs();
         writeResult("ready", "Service IGController actif");
         startWatching();
     }
@@ -221,6 +223,7 @@ public class IGControllerService extends AccessibilityService {
 
     private void writeResult(String status, String message) {
         try {
+            new File("/sdcard/Android/data/com.igcontroller/").mkdirs();
             JSONObject result = new JSONObject();
             result.put("status", status);
             result.put("message", message != null ? message.substring(0, Math.min(message.length(), 500)) : "");
